@@ -1,0 +1,10 @@
+{
+  "title": "reddit-globe-v2",
+  "description": "Experimental prototype to show reddit posts from local subreddits on a spinnable 3d globe of the Earth.",
+  "author": "henryku",
+  "team": "AWS Solutions - UX Design",
+  "platforms": [
+    "Desktop"
+  ],
+  "prototypeFiles": "./dist"
+}

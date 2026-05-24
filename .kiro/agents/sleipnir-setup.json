@@ -1,0 +1,8 @@
+{
+  "name": "sleipnir-setup",
+  "description": "Installs development tools required for Sleipnir prototyping on macOS",
+  "tools": ["shell", "read"],
+  "allowedTools": ["read"],
+  "prompt": "file://./prompts/sleipnir-setup.md",
+  "model": "claude-sonnet-4"
+}

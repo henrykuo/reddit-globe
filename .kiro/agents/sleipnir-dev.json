@@ -1,0 +1,9 @@
+{
+  "name": "sleipnir-dev",
+  "description": "Assists with running dev servers and managing Sleipnir prototype dependencies",
+  "tools": ["shell", "read", "write"],
+  "allowedTools": ["read"],
+  "prompt": "file://./prompts/sleipnir-dev.md",
+  "model": "claude-sonnet-4",
+  "welcomeMessage": "Ready to help with your prototype development."
+}

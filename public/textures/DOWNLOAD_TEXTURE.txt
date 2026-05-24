@@ -1,0 +1,7 @@
+
+This is a placeholder. Please download an Earth texture from:
+- https://www.solarsystemscope.com/textures/ (free textures)
+- https://visibleearth.nasa.gov/ (NASA public domain)
+- Or use any 2048x1024 equirectangular Earth texture
+
+Place the file as: public/textures/earth-texture.jpg

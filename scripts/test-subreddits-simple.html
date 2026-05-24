@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Subreddits</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #00ff00;
+    }
+    .success { color: #00ff00; }
+    .error { color: #ff0000; }
+    .warning { color: #ffaa00; }
+    #output {
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Subreddit Tester</h1>
+  <button onclick="testAllSubreddits()">Start Testing</button>
+  <div id="output"></div>
+
+  <script type="module">
+    import { citySubreddits } from '../src/data/citySubreddits.ts';
+    
+    const PROXY_URL = 'https://corsproxy.io/?';
+    const DELAY_MS = 500;
+    const output = document.getElementById('output');
+
+    function log(message, className = '') {
+      const line = document.createElement('div');
+      line.textContent = message;
+      if (className) line.className = className;
+      output.appendChild(line);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    async function testSubreddit(subreddit) {
+      try {
+        const redditUrl = `https://www.reddit.com/r/${subreddit}/hot.json?limit=1`;
+        const response = await fetch(
+          `${PROXY_URL}${encodeURIComponent(redditUrl)}`,
+          {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+          }
+        );
+
+        return { subreddit, status: response.status, ok: response.ok };
+      } catch (error) {
+        return { subreddit, status: 'ERROR', ok: false, error: error.message };
+      }
+    }
+
+    async function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    window.testAllSubreddits = async function() {
+      output.innerHTML = '';
+      log(`Testing ${citySubreddits.length} subreddits...\n`);
+      
+      const results = { success: [], forbidden: [], notFound: [], other: [] };
+
+      for (let i = 0; i < citySubreddits.length; i++) {
+        const city = citySubreddits[i];
+        const result = await testSubreddit(city.subreddit);
+        
+        if (result.ok) {
+          results.success.push(result);
+          log(`✓ [${i + 1}/${citySubreddits.length}] r/${result.subreddit}`, 'success');
+        } else if (result.status === 403) {
+          results.forbidden.push(result);
+          log(`✗ [${i + 1}/${citySubreddits.length}] r/${result.subreddit} - 403`, 'error');
+        } else if (result.status === 404) {
+          results.notFound.push(result);
+          log(`✗ [${i + 1}/${citySubreddits.length}] r/${result.subreddit} - 404`, 'warning');
+        } else {
+          results.other.push(result);
+          log(`? [${i + 1}/${citySubreddits.length}] r/${result.subreddit} - ${result.status}`, 'warning');
+        }
+
+        if (i < citySubreddits.length - 1) await delay(DELAY_MS);
+      }
+
+      // Summary
+      log('\n' + '='.repeat(60));
+      log('SUMMARY');
+      log('='.repeat(60));
+      log(`✓ Success: ${results.success.length}`, 'success');
+      log(`✗ 403 Forbidden: ${results.forbidden.length}`, 'error');
+      log(`✗ 404 Not Found: ${results.notFound.length}`, 'warning');
+      log(`? Other: ${results.other.length}`, 'warning');
+
+      if (results.forbidden.length > 0) {
+        log('\n403 FORBIDDEN (to remove):');
+        results.forbidden.forEach(r => log(`  r/${r.subreddit}`, 'error'));
+      }
+
+      if (results.notFound.length > 0) {
+        log('\n404 NOT FOUND (to remove):');
+        results.notFound.forEach(r => log(`  r/${r.subreddit}`, 'warning'));
+      }
+
+      // Generate removal list
+      const toRemove = [...results.forbidden, ...results.notFound].map(r => r.subreddit);
+      log('\n\nSubreddits to remove (copy this):');
+      log(JSON.stringify(toRemove, null, 2));
+    };
+  </script>
+</body>
+</html>
